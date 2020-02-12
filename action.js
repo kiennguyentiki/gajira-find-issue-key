@@ -4,7 +4,7 @@ const Jira = require('./common/net/Jira')
 const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g
 
 const eventTemplates = {
-  branch: '{{event.ref}}',
+  branch: '{{event.pull_request.head.ref}}',
   commits: "{{event.commits.map(c=>c.message).join(' ')}}",
 }
 
