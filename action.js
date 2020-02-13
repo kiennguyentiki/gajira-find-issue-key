@@ -36,7 +36,8 @@ module.exports = class {
       const issue = await this.Jira.getIssue(issueKey)
 
       if (issue) {
-        return { issue: issue.key }
+        console.log(`found issue with status ${issue.fields.status.name}`)
+        return { issue: issue.key, status: issue.fields.status.name }
       }
     }
   }

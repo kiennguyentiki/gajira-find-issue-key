@@ -17,6 +17,8 @@ inputs:
 outputs:
   issue:
     description: Key of the found issue
+  status:
+    description: Status of the found issue
 runs:
   using: 'node12'
   main: './dist/index.js'

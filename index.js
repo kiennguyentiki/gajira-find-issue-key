@@ -25,6 +25,7 @@ async function exec () {
 
       // Expose created issue's key as an output
       core.setOutput('issue', result.issue)
+      core.setOutput('status', result.status)
 
       const yamledResult = YAML.stringify(result)
       const extendedConfig = Object.assign({}, config, result)
