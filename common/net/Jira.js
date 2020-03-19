@@ -1,86 +1,100 @@
-const { get } = require('lodash')
+const { get } = require("lodash");
 
-const serviceName = 'jira'
-const { format } = require('url')
-const client = require('./client')(serviceName)
+const serviceName = "jira";
+const { format } = require("url");
+const client = require("./client")(serviceName);
 
 class Jira {
-  constructor ({ baseUrl, token, email }) {
-    this.baseUrl = baseUrl
-    this.token = token
-    this.email = email
+  constructor({ baseUrl, token, email }) {
+    this.baseUrl = baseUrl;
+    this.token = token;
+    this.email = email;
   }
 
-  async createIssue (body) {
-    return this.fetch('createIssue',
-      { pathname: '/rest/api/2/issue' },
-      { method: 'POST', body })
+  async createIssue(body) {
+    return this.fetch(
+      "createIssue",
+      { pathname: "/rest/api/2/issue" },
+      { method: "POST", body }
+    );
   }
 
-  async getIssue (issueId, query = {}) {
-    const { fields = [], expand = [] } = query
+  async getIssue(issueId, query = {}) {
+    const { fields = [], expand = [] } = query;
 
     try {
-      const res = await this.fetch('getIssue', {
+      const res = await this.fetch("getIssue", {
         pathname: `/rest/api/2/issue/${issueId}`,
         query: {
-          fields: fields.join(','),
-          expand: expand.join(','),
-        },
-      })
+          fields: fields.join(","),
+          expand: expand.join(",")
+        }
+      });
 
-      return res
+      return res;
     } catch (error) {
-      if (get(error, 'res.status') === 404) {
-        return
+      if (get(error, "res.status") === 404) {
+        return;
       }
 
-      throw error
+      throw error;
     }
   }
 
-  async getIssueTransitions (issueId) {
-    return this.fetch('getIssueTransitions', {
-      pathname: `/rest/api/2/issue/${issueId}/transitions`,
-    }, {
-      method: 'GET',
-    })
+  async getIssueTransitions(issueId) {
+    return this.fetch(
+      "getIssueTransitions",
+      {
+        pathname: `/rest/api/2/issue/${issueId}/transitions`
+      },
+      {
+        method: "GET"
+      }
+    );
   }
 
-  async transitionIssue (issueId, data) {
-    return this.fetch('transitionIssue', {
-      pathname: `/rest/api/3/issue/${issueId}/transitions`,
-    }, {
-      method: 'POST',
-      body: data,
-    })
+  async transitionIssue(issueId, data) {
+    return this.fetch(
+      "transitionIssue",
+      {
+        pathname: `/rest/api/2/issue/${issueId}/transitions`
+      },
+      {
+        method: "POST",
+        body: data
+      }
+    );
   }
 
-  async fetch (apiMethodName,
+  async fetch(
+    apiMethodName,
     { host, pathname, query },
-    { method, body, headers = {} } = {}) {
+    { method, body, headers = {} } = {}
+  ) {
     const url = format({
       host: host || this.baseUrl,
       pathname,
-      query,
-    })
+      query
+    });
 
     if (!method) {
-      method = 'GET'
+      method = "GET";
     }
 
-    if (headers['Content-Type'] === undefined) {
-      headers['Content-Type'] = 'application/json'
+    if (headers["Content-Type"] === undefined) {
+      headers["Content-Type"] = "application/json";
     }
 
     if (headers.Authorization === undefined) {
-      headers.Authorization = `Basic ${Buffer.from(`${this.email}:${this.token}`).toString('base64')}`
+      headers.Authorization = `Basic ${Buffer.from(
+        `${this.email}:${this.token}`
+      ).toString("base64")}`;
     }
 
     // strong check for undefined
     // cause body variable can be 'false' boolean value
-    if (body && headers['Content-Type'] === 'application/json') {
-      body = JSON.stringify(body)
+    if (body && headers["Content-Type"] === "application/json") {
+      body = JSON.stringify(body);
     }
 
     const state = {
@@ -88,29 +102,25 @@ class Jira {
         method,
         headers,
         body,
-        url,
-      },
-    }
+        url
+      }
+    };
 
     try {
-      await client(state, `${serviceName}:${apiMethodName}`)
+      await client(state, `${serviceName}:${apiMethodName}`);
     } catch (error) {
       const fields = {
         originError: error,
-        source: 'jira',
-      }
+        source: "jira"
+      };
 
-      delete state.req.headers
+      delete state.req.headers;
 
-      throw Object.assign(
-        new Error('Jira API error'),
-        state,
-        fields
-      )
+      throw Object.assign(new Error("Jira API error"), state, fields);
     }
 
-    return state.res.body
+    return state.res.body;
   }
 }
 
-module.exports = Jira
+module.exports = Jira;
